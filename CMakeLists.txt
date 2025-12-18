@@ -2,17 +2,26 @@ cmake_minimum_required(VERSION 3.18)
 project(bmtrain)
 enable_language(C)
 enable_language(CXX)
-set(CMAKE_CUDA_ARCHITECTURES "61;62;70;72;75;80")
+# set(CMAKE_CUDA_ARCHITECTURES "61;62;70;72;75;80")
+# set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/corex")
+# find_package(CUDA REQUIRED)
+# set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/clang++)
+# message("CMAKE_CUDA_COMPILER: ${CMAKE_CUDA_COMPILER}")
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CUDA
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/CudaOverride.cmake"
+)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --cuda-gpu-arch=ivcore20" CACHE STRING "..." FORCE)
+set(CMAKE_CUDA_ARCHITECTURES ivcore20 CACHE STRING "..." FORCE)
+
 enable_language(CUDA)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CUDA_STANDARD 14)
 set(CMAKE_CUDA_STANDARD_REQUIRED True)
 
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_62,code=sm_62 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_72,code=sm_72 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80")
-
+# set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_62,code=sm_62 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_72,code=sm_72 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80")
 if(NOT DEFINED ENV{BUILD_DOCKER_ENV} OR "$ENV{BUILD_DOCKER_ENV}" STREQUAL "0")
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_86,code=sm_86")
+    # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_86,code=sm_86")
     set(AVX_FLAGS "${AVX_FLAGS} -march=native")
 else()
     message("Building in docker environment, skipping compute_86 and enable all avx flag")
@@ -54,7 +63,7 @@ target_include_directories(C PRIVATE ${NCCL_INCLUDE_DIRS})
 target_compile_definitions(C
     PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
 
-set_target_properties(C PROPERTIES CUDA_ARCHITECTURES "61;62;70;72;75;80")
+# set_target_properties(C PROPERTIES CUDA_ARCHITECTURES "61;62;70;72;75;80")
 
 target_include_directories(C
     PRIVATE "csrc/include"

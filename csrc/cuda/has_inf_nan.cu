@@ -3,6 +3,7 @@
 #include <cuda.h>
 #include <cuda_fp16.h>
 #include "bfloat16.cuh"
+#include <algorithm>
 
 namespace{
 __inline__ __device__ bool isnan_(half v) {
@@ -112,7 +113,7 @@ void has_nan_inf_fp16_launcher(
     int32_t threads = 1024;
     dim3 block_size = dim3(threads, 1, 1);
     dim3 grid_size = dim3((n + threads - 1) / threads, 1, 1);
-    dim3 clamp_grid_size = dim3(min((n + threads - 1) / threads, 1024), 1, 1);
+    dim3 clamp_grid_size = dim3(std::min((n + threads - 1) / threads, 1024), 1, 1);
     
     bmt_has_nan_inf_fp16<<<clamp_grid_size, block_size, 0, reinterpret_cast<cudaStream_t>(stream)>>>(n, g_ptr, mid_ptr);
     bmt_has_nan_inf_reduce<<<1, block_size, 0, reinterpret_cast<cudaStream_t>(stream)>>>(mid_ptr, out_ptr);
@@ -131,7 +132,7 @@ void has_nan_inf_bf16_launcher(
     int32_t threads = 1024;
     dim3 block_size = dim3(threads, 1, 1);
     dim3 grid_size = dim3((n + threads - 1) / threads, 1, 1);
-    dim3 clamp_grid_size = dim3(min((n + threads - 1) / threads, 1024), 1, 1);
+    dim3 clamp_grid_size = dim3(std::min((n + threads - 1) / threads, 1024), 1, 1);
     
     bmt_has_nan_inf_bf16<<<clamp_grid_size, block_size, 0, reinterpret_cast<cudaStream_t>(stream)>>>(n, g_bf16, mid_ptr);
     bmt_has_nan_inf_reduce<<<1, block_size, 0, reinterpret_cast<cudaStream_t>(stream)>>>(mid_ptr, out_ptr);
